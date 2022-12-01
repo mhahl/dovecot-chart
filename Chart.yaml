@@ -1,0 +1,21 @@
+apiVersion: v2
+appVersion: 3.6.4
+dependencies:
+  - name: common
+    repository: https://charts.bitnami.com/bitnami
+    tags:
+      - bitnami-common
+    version: 2.2.0
+description: dovecot is a Mail Transport Agent (MTA).
+engine: gotpl
+home: https://github.com/mhahl/charts
+keywords:
+  - dovecot
+  - mail
+maintainers:
+  - name: Mark Hahl
+    url: https://github.com/mhahl/charts
+name: dovecot
+sources:
+  - https://github.com/mhahl/charts
+version: 0.1.0

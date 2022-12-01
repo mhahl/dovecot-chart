@@ -1,0 +1,185 @@
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ template "common.names.fullname" . }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: dovecot
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if not .Values.dovecot.autoscaling.enabled }}
+  replicas: {{ .Values.dovecot.replicaCount }}
+  {{- end }}
+  {{- if .Values.dovecot.updateStrategy }}
+  strategy: {{- toYaml .Values.dovecot.updateStrategy | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: dovecot
+  template:
+    metadata:
+      {{- if .Values.dovecot.podAnnotations }}
+      annotations: {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: dovecot
+        {{- if .Values.dovecot.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.podLabels "context" $) | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ template "dovecot.serviceAccountName" . }}
+      {{- include "dovecot.imagePullSecrets" . | nindent 6 }}
+      {{- if .Values.dovecot.hostAliases }}
+      hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.hostAliases "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.dovecot.affinity }}
+      affinity: {{- include "common.tplvalues.render" ( dict "value" .Values.dovecot.affinity "context" $) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{- include "common.affinities.pods" (dict "type" .Values.dovecot.podAffinityPreset "component" "dovecot" "context" $) | nindent 10 }}
+        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.dovecot.podAntiAffinityPreset "component" "dovecot" "context" $) | nindent 10 }}
+        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" .Values.dovecot.nodeAffinityPreset.type "key" .Values.dovecot.nodeAffinityPreset.key "values" .Values.dovecot.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      {{- if .Values.dovecot.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" ( dict "value" .Values.dovecot.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.dovecot.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.tolerations "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.dovecot.priorityClassName }}
+      priorityClassName: {{ .Values.dovecot.priorityClassName | quote }}
+      {{- end }}
+      {{- if .Values.dovecot.schedulerName }}
+      schedulerName: {{ .Values.dovecot.schedulerName | quote }}
+      {{- end }}
+      {{- if .Values.dovecot.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.topologySpreadConstraints "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.dovecot.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.dovecot.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.dovecot.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.dovecot.terminationGracePeriodSeconds }}
+      {{- end }}
+      initContainers:
+        {{- if and .Values.volumePermissions.enabled .Values.persistence.enabled }}
+        - name: volume-permissions
+          image: {{ include "dovecot.volumePermissions.image" . }}
+          imagePullPolicy: {{ .Values.volumePermissions.image.pullPolicy | quote }}
+          command:
+            - /usr/bin/true
+          securityContext: {{- include "common.tplvalues.render" (dict "value" .Values.volumePermissions.containerSecurityContext "context" $) | nindent 12 }}
+          {{- if .Values.volumePermissions.resources }}
+          resources: {{- toYaml .Values.volumePermissions.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: dovecot
+              mountPath: {{ .Values.persistence.mountPath }}
+              {{- if .Values.persisteance.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
+        {{- end }}
+        {{- if .Values.dovecot.initContainers }}
+          {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.initContainers "context" $) | nindent 8 }}
+        {{- end }}
+      containers:
+        - name: dovecot
+          image: {{ template "dovecot.image" . }}
+          imagePullPolicy: {{ .Values.dovecot.image.pullPolicy }}
+          {{- if .Values.dovecot.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.dovecot.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.diagnosticMode.enabled }}
+          command: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.command "context" $) | nindent 12 }}
+          {{- else if .Values.dovecot.command }}
+          command: {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.command "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.diagnosticMode.enabled }}
+          args: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.args "context" $) | nindent 12 }}
+          {{- else if .Values.dovecot.args }}
+          args: {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.args "context" $) | nindent 12 }}
+          {{- end }}
+          env:
+            - name: __TODO__
+              value: bar
+            {{- if .Values.dovecot.extraEnvVars }}
+            {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.extraEnvVars "context" $) | nindent 12 }}
+            {{- end }}
+          envFrom:
+            {{- if .Values.dovecot.extraEnvVarsCM }}
+            - configMapRef:
+                name: {{ include "common.tplvalues.render" (dict "value" .Values.dovecot.extraEnvVarsCM "context" $) }}
+            {{- end }}
+            {{- if .Values.dovecot.extraEnvVarsSecret }}
+            - secretRef:
+                name: {{ include "common.tplvalues.render" (dict "value" .Values.dovecot.extraEnvVarsSecret "context" $) }}
+            {{- end }}
+          {{- if .Values.dovecot.resources }}
+          resources: {{- toYaml .Values.dovecot.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: lmtp
+              containerPort: {{ .Values.dovecot.containerPorts.lmtp }}
+            - name: imaps
+              containerPort: {{ .Values.dovecot.containerPorts.imaps }}
+            - name: sieve
+              containerPort: {{ .Values.dovecot.containerPorts.sieve }}
+            - name: sasl
+              containerPort: {{ .Values.dovecot.containerPorts.sasl }}
+          {{- if not .Values.diagnosticMode.enabled }}
+          {{- if .Values.dovecot.customLivenessProbe }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.customLivenessProbe "context" $) | nindent 12 }}
+          {{- else if .Values.dovecot.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.dovecot.livenessProbe "enabled") "context" $) | nindent 12 }}
+            exec:
+              command:
+                - /bin/true
+          {{- end }}
+          {{- if .Values.dovecot.customReadinessProbe }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.customReadinessProbe "context" $) | nindent 12 }}
+          {{- else if .Values.dovecot.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.dovecot.readinessProbe "enabled") "context" $) | nindent 12 }}
+            exec:
+              command:
+                - /bin/true
+          {{- end }}
+          {{- if .Values.dovecot.customStartupProbe }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.customStartupProbe "context" $) | nindent 12 }}
+          {{- else if .Values.dovecot.startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.dovecot.startupProbe "enabled") "context" $) | nindent 12 }}
+            exec:
+              command:
+                - /bin/true
+          {{- end }}
+          {{- end }}
+          {{- if .Values.dovecot.lifecycleHooks }}
+          lifecycle: {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.lifecycleHooks "context" $) | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: dovecot
+              mountPath: {{ .Values.persistence.mountPath }}
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
+          {{- if .Values.dovecot.extraVolumeMounts }}
+          {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+        {{- if .Values.dovecot.sidecars }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.dovecot.sidecars "context" $) | nindent 8 }}
+        {{- end }}
+      volumes:
+        - name: dovecot
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ default (include "common.names.fullname" .) .Values.persistence.existingClaim }}
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.dovecot.extraVolumes }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.dovecot.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}

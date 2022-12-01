@@ -1,0 +1,637 @@
+## @section Global parameters
+## Global Docker image parameters
+## Please, note that this will override the image parameters, including dependencies, configured to use the global value
+## Current available global Docker image parameters: imageRegistry, imagePullSecrets and storageClass
+##
+
+## @param global.imageRegistry Global Docker image registry
+## @param global.imagePullSecrets Global Docker registry secret names as an array
+## @param global.storageClass Global StorageClass for Persistent Volume(s)
+##
+global:
+  imageRegistry: ""
+  ## E.g.
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  ##
+  imagePullSecrets: []
+  storageClass: ""
+
+## @section Common parameters
+##
+
+## @param kubeVersion Override Kubernetes version
+##
+kubeVersion: ""
+## @param nameOverride String to partially override common.names.name
+##
+nameOverride: ""
+## @param fullnameOverride String to fully override common.names.fullname
+##
+fullnameOverride: ""
+## @param namespaceOverride String to fully override common.names.namespace
+##
+namespaceOverride: ""
+## @param commonLabels Labels to add to all deployed objects
+##
+commonLabels: {}
+## @param commonAnnotations Annotations to add to all deployed objects
+##
+commonAnnotations: {}
+## @param clusterDomain Kubernetes cluster domain name
+##
+clusterDomain: cluster.local
+## @param extraDeploy Array of extra objects to deploy with the release
+##
+extraDeploy: []
+
+## Enable diagnostic mode in the deployment
+##
+diagnosticMode:
+  ## @param diagnosticMode.enabled Enable diagnostic mode (all probes will be disabled and the command will be overridden)
+  ##
+  enabled: false
+  ## @param diagnosticMode.command Command to override all containers in the deployment
+  ##
+  command:
+    - sleep
+  ## @param diagnosticMode.args Args to override all containers in the deployment
+  ##
+  args:
+    - infinity
+
+## @section dovecot Parameters
+##
+
+## Main dovecot service.
+##
+dovecot:
+  ## Bitnami dovecot image
+  ## ref: https://hub.docker.com/r/mhahl/dovecot-container/tags/
+  ## @param dovecot.image.registry dovecot image registry
+  ## @param dovecot.image.repository dovecot image repository
+  ## @param dovecot.image.tag dovecot image tag (immutable tags are recommended)
+  ## @param dovecot.image.digest dovecot image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag image tag (immutable tags are recommended)
+  ## @param dovecot.image.pullPolicy dovecot image pull policy
+  ## @param dovecot.image.pullSecrets dovecot image pull secrets
+  ## @param dovecot.image.debug Enable dovecot image debug mode
+  ##
+  image:
+    registry: ghcr.io
+    repository: mhahl/dovecot-container
+    tag: master
+    digest: ""
+    ## Specify a imagePullPolicy
+    ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+    ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+    ##
+    pullPolicy: Always
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## e.g:
+    ## pullSecrets:
+    ##   - myRegistryKeySecretName
+    ##
+    pullSecrets: []
+    ## Enable debug mode
+    ##
+    debug: false
+  ## @param dovecot.replicaCount Number of dovecot replicas to deploy
+  ##
+  replicaCount: 1
+  ## @param dovecot.containerPorts.lmtp dovecot LMTP container port
+  ## @param dovecot.containerPorts.imaps dovecot IMAPS container port
+  ## @param dovecot.containerPorts.sieve dovecot Sieve container port
+  ## @param dovecot.containerPorts.sasl dovecot Sieve container port
+  ##
+  containerPorts:
+    lmtp: 25
+    imaps: 993
+    sieve: 2876
+    sasl: 3659
+  ## Configure extra options for dovecot containers' liveness and readiness probes
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+  ## @param dovecot.livenessProbe.enabled Enable livenessProbe on dovecot containers
+  ## @param dovecot.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+  ## @param dovecot.livenessProbe.periodSeconds Period seconds for livenessProbe
+  ## @param dovecot.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+  ## @param dovecot.livenessProbe.failureThreshold Failure threshold for livenessProbe
+  ## @param dovecot.livenessProbe.successThreshold Success threshold for livenessProbe
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 10
+    failureThreshold: 2
+    successThreshold: 1
+  ## @param dovecot.readinessProbe.enabled Enable readinessProbe on dovecot containers
+  ## @param dovecot.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+  ## @param dovecot.readinessProbe.periodSeconds Period seconds for readinessProbe
+  ## @param dovecot.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+  ## @param dovecot.readinessProbe.failureThreshold Failure threshold for readinessProbe
+  ## @param dovecot.readinessProbe.successThreshold Success threshold for readinessProbe
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 10
+    failureThreshold: 2
+    successThreshold: 1
+  ## @param dovecot.startupProbe.enabled Enable startupProbe on dovecot containers
+  ## @param dovecot.startupProbe.initialDelaySeconds Initial delay seconds for startupProbe
+  ## @param dovecot.startupProbe.periodSeconds Period seconds for startupProbe
+  ## @param dovecot.startupProbe.timeoutSeconds Timeout seconds for startupProbe
+  ## @param dovecot.startupProbe.failureThreshold Failure threshold for startupProbe
+  ## @param dovecot.startupProbe.successThreshold Success threshold for startupProbe
+  ##
+  startupProbe:
+    enabled: false
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 10
+    failureThreshold: 2
+    successThreshold: 5
+  ## @param dovecot.customLivenessProbe Custom livenessProbe that overrides the default one
+  ##
+  customLivenessProbe: {}
+  ## @param dovecot.customReadinessProbe Custom readinessProbe that overrides the default one
+  ##
+  customReadinessProbe: {}
+  ## @param dovecot.customStartupProbe Custom startupProbe that overrides the default one
+  ##
+  customStartupProbe: {}
+  ## dovecot resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## @param dovecot.resources.limits The resources limits for the dovecot containers
+  ## @param dovecot.resources.requests The requested resources for the dovecot containers
+  ##
+  resources:
+    limits: {}
+    requests: {}
+  ## Configure Pods Security Context
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  ## @param dovecot.podSecurityContext.enabled Enabled dovecot pods' Security Context
+  ## @param dovecot.podSecurityContext.fsGroup Set dovecot pod's Security Context fsGroup
+  ##
+  podSecurityContext:
+    enabled: true
+    fsGroup: 12
+  ## Configure Container Security Context
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## @param dovecot.containerSecurityContext.enabled Enabled dovecot containers' Security Context
+  ## @param dovecot.containerSecurityContext.runAsUser Set dovecot containers' Security Context runAsUser
+  ## @param dovecot.containerSecurityContext.runAsNonRoot Set dovecot containers' Security Context runAsNonRoot
+  ## @param dovecot.containerSecurityContext.readOnlyRootFilesystem Set dovecot containers' Security Context runAsNonRoot
+  ##
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 0
+    runAsNonRoot: false
+    readOnlyRootFilesystem: false
+
+  ## @param dovecot.existingConfigmap The name of an existing ConfigMap with your custom configuration for dovecot
+  ##
+  existingConfigmap:
+  ## @param dovecot.command Override default container command (useful when using custom images)
+  ##
+  command: []
+  ## @param dovecot.args Override default container args (useful when using custom images)
+  ##
+  args: []
+  ## @param dovecot.hostAliases dovecot pods host aliases
+  ## https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
+  ##
+  hostAliases: []
+  ## @param dovecot.podLabels Extra labels for dovecot pods
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  ##
+  podLabels: {}
+  ## @param dovecot.podAnnotations Annotations for dovecot pods
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  ##
+  podAnnotations: {}
+  ## @param dovecot.podAffinityPreset Pod affinity preset. Ignored if `dovecot.affinity` is set. Allowed values: `soft` or `hard`
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+  ##
+  podAffinityPreset: ""
+  ## @param dovecot.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `dovecot.affinity` is set. Allowed values: `soft` or `hard`
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+  ##
+  podAntiAffinityPreset: soft
+  ## Pod Disruption Budget configuration
+  ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb
+  ## @param dovecot.pdb.create Enable/disable a Pod Disruption Budget creation
+  ## @param dovecot.pdb.minAvailable Minimum number/percentage of pods that should remain scheduled
+  ## @param dovecot.pdb.maxUnavailable Maximum number/percentage of pods that may be made unavailable
+  ##
+  pdb:
+    create: false
+    minAvailable: 1
+    maxUnavailable: ""
+  ## Autoscaling configuration
+  ## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+  ## @param dovecot.autoscaling.enabled Enable autoscaling for dovecot
+  ## @param dovecot.autoscaling.minReplicas Minimum number of dovecot replicas
+  ## @param dovecot.autoscaling.maxReplicas Maximum number of dovecot replicas
+  ## @param dovecot.autoscaling.targetCPU Target CPU utilization percentage
+  ## @param dovecot.autoscaling.targetMemory Target Memory utilization percentage
+  ##
+  autoscaling:
+    enabled: false
+    minReplicas: ""
+    maxReplicas: ""
+    targetCPU: ""
+    targetMemory: ""
+  ## Node dovecot.affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param dovecot.nodeAffinityPreset.type Node affinity preset type. Ignored if `dovecot.affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param dovecot.nodeAffinityPreset.key Node label key to match. Ignored if `dovecot.affinity` is set
+    ##
+    key: ""
+    ## @param dovecot.nodeAffinityPreset.values Node label values to match. Ignored if `dovecot.affinity` is set
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param dovecot.affinity Affinity for dovecot pods assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## NOTE: `dovecot.podAffinityPreset`, `dovecot.podAntiAffinityPreset`, and `dovecot.nodeAffinityPreset` will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param dovecot.nodeSelector Node labels for dovecot pods assignment
+  ## ref: https://kubernetes.io/docs/user-guide/node-selection/
+  ##
+  nodeSelector: {}
+  ## @param dovecot.tolerations Tolerations for dovecot pods assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  ##
+  tolerations: []
+  ## @param dovecot.updateStrategy.type dovecot statefulset strategy type
+  ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
+  ##
+  updateStrategy:
+    ## StrategyType
+    ## Can be set to RollingUpdate or OnDelete
+    ##
+    type: RollingUpdate
+
+  ## ONLY FOR STATEFULSETS
+  ## @param dovecot.podManagementPolicy Statefulset Pod management policy, it needs to be Parallel to be able to complete the cluster join
+  ## Ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#pod-management-policies
+  ##
+  podManagementPolicy: OrderedReady
+
+  ## @param dovecot.priorityClassName dovecot pods' priorityClassName
+  ##
+  priorityClassName: ""
+  ## @param dovecot.topologySpreadConstraints Topology Spread Constraints for pod assignment spread across your cluster among failure-domains. Evaluated as a template
+  ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/#spread-constraints-for-pods
+  ##
+  topologySpreadConstraints: []
+  ## @param dovecot.schedulerName Name of the k8s scheduler (other than default) for dovecot pods
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+  ##
+  schedulerName: ""
+  ## @param dovecot.terminationGracePeriodSeconds Seconds Redmine pod needs to terminate gracefully
+  ## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods
+  ##
+  terminationGracePeriodSeconds: ""
+  ## @param dovecot.lifecycleHooks for the dovecot container(s) to automate configuration before or after startup
+  ##
+  lifecycleHooks: {}
+  ## @param dovecot.extraEnvVars Array with extra environment variables to add to dovecot nodes
+  ## e.g:
+  ## extraEnvVars:
+  ##   - name: FOO
+  ##     value: "bar"
+  ##
+  extraEnvVars: []
+  ## @param dovecot.extraEnvVarsCM Name of existing ConfigMap containing extra env vars for dovecot nodes
+  ##
+  extraEnvVarsCM: ""
+  ## @param dovecot.extraEnvVarsSecret Name of existing Secret containing extra env vars for dovecot nodes
+  ##
+  extraEnvVarsSecret: ""
+  ## @param dovecot.extraVolumes Optionally specify extra list of additional volumes for the dovecot pod(s)
+  ##
+  extraVolumes: []
+  ## @param dovecot.extraVolumeMounts Optionally specify extra list of additional volumeMounts for the dovecot container(s)
+  ##
+  extraVolumeMounts: []
+  ## @param dovecot.sidecars Add additional sidecar containers to the dovecot pod(s)
+  ## e.g:
+  ## sidecars:
+  ##   - name: your-image-name
+  ##     image: your-image
+  ##     imagePullPolicy: Always
+  ##     ports:
+  ##       - name: portname
+  ##         containerPort: 1234
+  ##
+  sidecars: []
+  ## @param dovecot.initContainers Add additional init containers to the dovecot pod(s)
+  ## ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+  ## e.g:
+  ## initContainers:
+  ##  - name: your-image-name
+  ##    image: your-image
+  ##    imagePullPolicy: Always
+  ##    command: ['sh', '-c', 'echo "hello world"']
+  ##
+  initContainers: []
+
+## @section dovecot TLS parameters
+##
+
+## TLS configuration
+##
+tls:
+  ## @param tls.enabled Enable the TLS/SSL configuration
+  ##
+  enabled: false
+
+  ## @param tls.hostname for TLS certificate
+  ##
+  hostname: dovecot.cluster.local
+
+  ## @param tls.autoGenerated Create self-signed TLS certificates. Currently only supports PEM certificates
+  ##
+  selfSigned: true
+  ## @param tls.certificatesSecretName Name of the secret that contains the certificates
+  ## It should contain two keys called "keystore.p12" and "trustore.p12" with the files in JKS or P12 format
+  ##   certificatesSecretName: cert-files
+  ##
+  certificatesSecretName: ""
+  ## @param tls.passwordsSecretName Set the name of the secret that contains the passwords for the certificate files
+  ## It should contain two keys called "tls-keystore-password" and "tls-truststore-password".
+  ## e.g:
+  ## passwordsSecretName: my-passwords
+  ##
+
+
+## @section Traffic Exposure Parameters
+##
+
+## dovecot service parameters
+##
+service:
+  ## @param service.type dovecot service type
+  ##
+  type: ClusterIP
+  ## @param service.ports.http dovecot service HTTP port
+  ## @param service.ports.https dovecot service HTTPS port
+  ##
+  ports:
+    lmtp: 25
+    imaps: 993
+    sieve: 2876
+    sasl: 3659
+  ## Node ports to expose
+  ## @param service.nodePorts.http Node port for HTTP
+  ## @param service.nodePorts.https Node port for HTTPS
+  ## NOTE: choose port between <30000-32767>
+  ##
+  nodePorts:
+    lmtp: "30125"
+    imaps: "30993"
+    sieve: "30876"
+    sasl: "30659"
+
+  ## @param service.clusterIP dovecot service Cluster IP
+  ## e.g.:
+  ## clusterIP: None
+  ##
+  clusterIP: ""
+  ## @param service.loadBalancerIP dovecot service Load Balancer IP
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer
+  ##
+  loadBalancerIP: ""
+  ## @param service.loadBalancerSourceRanges dovecot service Load Balancer sources
+  ## ref: https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+  ## e.g:
+  ## loadBalancerSourceRanges:
+  ##   - 10.10.10.0/24
+  ##
+  loadBalancerSourceRanges: []
+  ## @param service.externalTrafficPolicy dovecot service external traffic policy
+  ## ref http://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  ##
+  externalTrafficPolicy: Cluster
+  ## @param service.annotations Additional custom annotations for dovecot service
+  ##
+  annotations: {}
+  ## @param service.extraPorts Extra ports to expose in dovecot service (normally used with the `sidecars` value)
+  ##
+  extraPorts: []
+  ## @param service.sessionAffinity Control where client requests go, to the same pod or round-robin
+  ## Values: ClientIP or None
+  ## ref: https://kubernetes.io/docs/user-guide/services/
+  ##
+  sessionAffinity: None
+  ## @param service.sessionAffinityConfig Additional settings for the sessionAffinity
+  ## sessionAffinityConfig:
+  ##   clientIP:
+  ##     timeoutSeconds: 300
+  ##
+  sessionAffinityConfig: {}
+## @section Persistence Parameters
+##
+
+## Enable persistence using Persistent Volume Claims
+## ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
+##
+persistence:
+  ## @param persistence.enabled Enable persistence using Persistent Volume Claims
+  ##
+  enabled: true
+  ## @param persistence.mountPath Path to mount the volume at.
+  ##
+  mountPath: /var/spool/dovecot
+  ## @param persistence.subPath The subdirectory of the volume to mount to, useful in dev environments and one PV for multiple services
+  ##
+  subPath: ""
+  ## @param persistence.storageClass Storage class of backing PVC
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  storageClass: ""
+  ## @param persistence.annotations Persistent Volume Claim annotations
+  ##
+  annotations: {}
+  ## @param persistence.accessModes Persistent Volume Access Modes
+  ##
+  accessModes:
+    - ReadWriteOnce
+  ## @param persistence.size Size of data volume
+  ##
+  size: 8Gi
+  ## @param persistence.existingClaim The name of an existing PVC to use for persistence
+  ##
+  existingClaim: ""
+  ## @param persistence.selector Selector to match an existing Persistent Volume for WordPress data PVC
+  ## If set, the PVC can't have a PV dynamically provisioned for it
+  ## E.g.
+  ## selector:
+  ##   matchLabels:
+  ##     app: my-app
+  ##
+  selector: {}
+  ## @param persistence.dataSource Custom PVC data source
+  ##
+  dataSource: {}
+## @section Init Container Parameters
+##
+
+## 'volumePermissions' init container parameters
+## Changes the owner and group of the persistent volume mount point to runAsUser:fsGroup values
+##   based on the *podSecurityContext/*containerSecurityContext parameters
+##
+volumePermissions:
+  ## @param volumePermissions.enabled Enable init container that changes the owner/group of the PV mount point to `runAsUser:fsGroup`
+  ##
+  enabled: false
+  ## Bitnami Shell image
+  ## ref: https://hub.docker.com/r/bitnami/bitnami-shell/tags/
+  ## @param volumePermissions.image.registry Bitnami Shell image registry
+  ## @param volumePermissions.image.repository Bitnami Shell image repository
+  ## @param volumePermissions.image.tag Bitnami Shell image tag (immutable tags are recommended)
+  ## @param volumePermissions.image.pullPolicy Bitnami Shell image pull policy
+  ## @param volumePermissions.image.pullSecrets Bitnami Shell image pull secrets
+  ##
+  image:
+    registry: ghcr.io
+    repository: bitnami/bitnami-shell
+    tag: latest
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## e.g:
+    ## pullSecrets:
+    ##   - myRegistryKeySecretName
+    ##
+    pullSecrets: []
+  ## Init container's resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## @param volumePermissions.resources.limits The resources limits for the init container
+  ## @param volumePermissions.resources.requests The requested resources for the init container
+  ##
+  resources:
+    limits: {}
+    requests: {}
+  ## Init container Container Security Context
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## @param volumePermissions.containerSecurityContext.runAsUser Set init container's Security Context runAsUser
+  ## NOTE: when runAsUser is set to special value "auto", init container will try to chown the
+  ##   data folder to auto-determined user&group, using commands: `id -u`:`id -G | cut -d" " -f2`
+  ##   "auto" is especially useful for OpenShift which has scc with dynamic user ids (and 0 is not allowed)
+  ##
+  containerSecurityContext:
+    runAsUser: 0
+
+## @section Other Parameters
+##
+
+## RBAC configuration
+##
+rbac:
+  ## @param rbac.create Specifies whether RBAC resources should be created
+  ##
+  create: false
+
+  ## @param rbac.rules Custom RBAC rules to set
+  ## e.g:
+  ## rules:
+  ##   - apiGroups:
+  ##       - ""
+  ##     resources:
+  ##       - pods
+  ##     verbs:
+  ##       - get
+  ##       - list
+  ##
+  rules: []
+
+rbac:
+  create: true
+
+## ServiceAccount configuration
+##
+serviceAccount:
+  ## @param serviceAccount.create Specifies whether a ServiceAccount should be created
+  ##
+  create: true
+  ## @param serviceAccount.name The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the common.names.fullname template
+  ##
+  name: ""
+  ## @param serviceAccount.annotations Additional Service Account annotations (evaluated as a template)
+  ##
+  annotations: {}
+  ## @param serviceAccount.automountServiceAccountToken Automount service account token for the server service account
+  ##
+  automountServiceAccountToken: true
+
+## Prometheus metrics
+##
+metrics:
+  ## @param metrics.enabled Enable the export of Prometheus metrics
+  ##
+  enabled: false
+  ## Prometheus Operator ServiceMonitor configuration
+  ##
+  serviceMonitor:
+    ## @param metrics.serviceMonitor.enabled if `true`, creates a Prometheus Operator ServiceMonitor (also requires `metrics.enabled` to be `true`)
+    ##
+    enabled: false
+    ## @param metrics.serviceMonitor.namespace Namespace in which Prometheus is running
+    ##
+    namespace: ""
+    ## @param metrics.serviceMonitor.annotations Additional custom annotations for the ServiceMonitor
+    ##
+    annotations: {}
+    ## @param metrics.serviceMonitor.labels Extra labels for the ServiceMonitor
+    ##
+    labels: {}
+    ## @param metrics.serviceMonitor.jobLabel The name of the label on the target service to use as the job name in Prometheus
+    ##
+    jobLabel: ""
+    ## @param metrics.serviceMonitor.honorLabels honorLabels chooses the metric's labels on collisions with target labels
+    ##
+    honorLabels: false
+    ## @param metrics.serviceMonitor.interval Interval at which metrics should be scraped.
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    ## e.g:
+    ## interval: 10s
+    ##
+    interval: ""
+    ## @param metrics.serviceMonitor.scrapeTimeout Timeout after which the scrape is ended
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    ## e.g:
+    ## scrapeTimeout: 10s
+    ##
+    scrapeTimeout: ""
+    ## @param metrics.serviceMonitor.metricRelabelings Specify additional relabeling of metrics
+    ##
+    metricRelabelings: []
+    ## @param metrics.serviceMonitor.relabelings Specify general relabeling
+    ##
+    relabelings: []
+    ## @param metrics.serviceMonitor.selector Prometheus instance selector labels
+    ## ref: https://github.com/bitnami/charts/tree/main/bitnami/prometheus-operator#prometheus-configuration
+    ## selector:
+    ##   prometheus: my-prometheus
+    ##
+    selector: {}

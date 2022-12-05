@@ -18,4 +18,4 @@ maintainers:
 name: dovecot
 sources:
   - https://github.com/mhahl/charts
-version: 0.1.0
+version: 0.1.1

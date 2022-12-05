@@ -72,7 +72,10 @@ spec:
           image: {{ include "dovecot.volumePermissions.image" . }}
           imagePullPolicy: {{ .Values.volumePermissions.image.pullPolicy | quote }}
           command:
-            - chmod -Rv 777 /srv/mail
+            - sh
+            - -c
+            - |
+              /bin/chmod -Rv 777 /srv/mail
           securityContext: {{- include "common.tplvalues.render" (dict "value" .Values.volumePermissions.containerSecurityContext "context" $) | nindent 12 }}
           {{- if .Values.volumePermissions.resources }}
           resources: {{- toYaml .Values.volumePermissions.resources | nindent 12 }}

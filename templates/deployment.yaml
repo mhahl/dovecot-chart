@@ -80,7 +80,7 @@ spec:
           volumeMounts:
             - name: dovecot
               mountPath: {{ .Values.persistence.mountPath }}
-              {{- if .Values.persisteance.subPath }}
+              {{- if .Values.persistence.subPath }}
               subPath: {{ .Values.persistence.subPath }}
               {{- end }}
         {{- end }}
